@@ -21,6 +21,7 @@ from .const import (
     CONF_METER,
     CONF_METER_DELTA_VALUES,
     CONF_METER_NET_CONSUMPTION,
+    CONF_METER_ROLLOVER_VALUE,
     CONF_METER_OFFSET,
     CONF_METER_TYPE,
     CONF_SOURCE_SENSOR,
@@ -85,6 +86,7 @@ METER_CONFIG_SCHEMA = vol.Schema(
             ),
             vol.Optional(CONF_METER_DELTA_VALUES, default=False): cv.boolean,
             vol.Optional(CONF_METER_NET_CONSUMPTION, default=False): cv.boolean,
+            vol.Optional(CONF_METER_ROLLOVER_VALUE, default=None): cv.decimal,
             vol.Optional(CONF_TARIFFS, default=[]): vol.All(
                 cv.ensure_list, vol.Unique(), [cv.string]
             ),
