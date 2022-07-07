@@ -19,6 +19,7 @@ from .const import (
     BIMONTHLY,
     CONF_METER_DELTA_VALUES,
     CONF_METER_NET_CONSUMPTION,
+    CONF_METER_ROLLOVER_VALUE,
     CONF_METER_OFFSET,
     CONF_METER_TYPE,
     CONF_SOURCE_SENSOR,
@@ -87,6 +88,13 @@ CONFIG_SCHEMA = vol.Schema(
         vol.Required(
             CONF_METER_NET_CONSUMPTION, default=False
         ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_METER_ROLLOVER_VALUE, default=None
+        ): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                mode=selector.NumberSelectorMode.BOX,
+            ),
+        ),
         vol.Required(
             CONF_METER_DELTA_VALUES, default=False
         ): selector.BooleanSelector(),
