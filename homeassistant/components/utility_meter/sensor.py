@@ -49,6 +49,7 @@ from .const import (
     CONF_METER,
     CONF_METER_DELTA_VALUES,
     CONF_METER_NET_CONSUMPTION,
+    CONF_METER_ROLLOVER_VALUE,
     CONF_METER_OFFSET,
     CONF_METER_TYPE,
     CONF_SOURCE_SENSOR,
@@ -127,6 +128,7 @@ async def async_setup_entry(
         meter_type = None
     name = config_entry.title
     net_consumption = config_entry.options[CONF_METER_NET_CONSUMPTION]
+    rollover_value = config_entry.options[CONF_METER_ROLLOVER_VALUE]
     tariff_entity = hass.data[DATA_UTILITY][entry_id][CONF_TARIFF_ENTITY]
 
     meters = []
@@ -141,6 +143,7 @@ async def async_setup_entry(
             meter_type=meter_type,
             name=name,
             net_consumption=net_consumption,
+            rollover_value=rollover_value,
             parent_meter=entry_id,
             source_entity=source_entity_id,
             tariff_entity=tariff_entity,
@@ -159,6 +162,7 @@ async def async_setup_entry(
                 meter_type=meter_type,
                 name=f"{name} {tariff}",
                 net_consumption=net_consumption,
+                rollover_value=rollover_value,
                 parent_meter=entry_id,
                 source_entity=source_entity_id,
                 tariff_entity=tariff_entity,
@@ -223,6 +227,9 @@ async def async_setup_platform(
         conf_meter_net_consumption = hass.data[DATA_UTILITY][meter][
             CONF_METER_NET_CONSUMPTION
         ]
+        conf_meter_rollover_value = hass.data[DATA_UTILITY][meter][
+            CONF_METER_ROLLOVER_VALUE
+        ]
         conf_meter_tariff_entity = hass.data[DATA_UTILITY][meter].get(
             CONF_TARIFF_ENTITY
         )
@@ -234,6 +241,7 @@ async def async_setup_platform(
             meter_type=conf_meter_type,
             name=conf_sensor_name,
             net_consumption=conf_meter_net_consumption,
+            rollover_value=conf_meter_rollover_value,
             parent_meter=meter,
             source_entity=conf_meter_source,
             tariff_entity=conf_meter_tariff_entity,
@@ -313,6 +321,7 @@ class UtilityMeterSensor(RestoreSensor):
         meter_type,
         name,
         net_consumption,
+        rollover_value,
         parent_meter,
         source_entity,
         tariff_entity,
@@ -344,6 +353,7 @@ class UtilityMeterSensor(RestoreSensor):
             self._cron_pattern = cron_pattern
         self._sensor_delta_values = delta_values
         self._sensor_net_consumption = net_consumption
+        self._sensor_rollover_value = rollover_value
         self._tariff = tariff
         self._tariff_entity = tariff_entity
 
@@ -390,7 +400,8 @@ class UtilityMeterSensor(RestoreSensor):
 
             if (not self._sensor_net_consumption) and adjustment < 0:
                 # Source sensor just rolled over
-                # TODO add difference between last state and rollover value if configured.
+                if self._sensor_rollover_value:
+                    adjustment = self._sensor_rollover_value - Decimal(old_state.state)
                 adjustment += Decimal(new_state.state)
 
             self._state += adjustment
