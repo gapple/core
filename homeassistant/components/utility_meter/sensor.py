@@ -389,8 +389,10 @@ class UtilityMeterSensor(RestoreSensor):
                 adjustment = Decimal(new_state.state) - Decimal(old_state.state)
 
             if (not self._sensor_net_consumption) and adjustment < 0:
-                # Source sensor just rolled over for unknown reasons,
-                return
+                # Source sensor just rolled over
+                # TODO add difference between last state and rollover value if configured.
+                adjustment += Decimal(new_state.state)
+
             self._state += adjustment
 
         except DecimalException as err:
